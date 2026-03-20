@@ -22,5 +22,20 @@ Our experiments are conducted under consistent data split settings for fair comp
 - **SRSNet (TIP 2025)**  
   https://github.com/fidshu/SRSNet  
 
+## 📥 Dataset Download
+
+Two datasets are provided for reproducing our experiments:
+
+1. **PAL-style split dataset (for IRSTD, NUDT-SIRST, SIRST3)**  
+   - File: `dataset.zip`  
+   - Download: [Baidu Netdisk](https://pan.baidu.com/s/12WYuCtyuRBpos4m47_uGJw?pwd=tk8i)  
+   - Extraction code: `tk8i`  
+   - Note: This dataset follows the **PAL** training/testing split.
+
+2. **KBT dataset (SRSNet-style split)**  
+   - File: `KBT.zip`  
+   - Download: [Baidu Netdisk](https://pan.baidu.com/s/1mysj2Y92aALRJoYDLgl-rg?pwd=fmmh)  
+   - Extraction code: `fmmh`  
+   - Note: This dataset follows the **SRSNet** training/testing split.
 
 
