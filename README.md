@@ -1,19 +1,26 @@
-## 论文中所提到的方法的连接：
+## 📄 Methods Referenced in This Paper
 
-### MLCLNet（集成于MSDA-Net）IPT’22
-- 🔗 项目链接：[https://github.com/YuChuang1205/MSDA-Net](https://github.com/YuChuang1205/MSDA-Net)
----
-### MSHNet CVPR'24
-- 🔗 项目链接：[https://github.com/Lliu666/MSHNet](https://github.com/Lliu666/MSHNet)
----
-### ConDSeg AAAI‘25
-- 🔗 项目链接：[https://github.com/Mengqi-Lei/ConDSeg](https://github.com/Mengqi-Lei/ConDSeg)
----
-### PAL ICCV‘25
-- 🔗 项目链接：[https://github.com/YuChuang1205/PAL](https://github.com/YuChuang1205/PAL)
----
-### UNIP ICCV‘25
-- 🔗 项目链接：[https://github.com/casiatao/UNIP](https://github.com/casiatao/UNIP)
----
-### SRSNet TIP‘25
-- 🔗 项目链接：[https://github.com/fidshu/SRSNet](https://github.com/fidshu/SRSNet)
+Our experiments are conducted under consistent data split settings for fair comparison. Specifically, the **IRSTD**, **NUDT-SIRST**, and **SIRST3** benchmarks follow the same training/testing split protocol as **PAL**, while the **KBT** dataset adopts the split strategy defined in **SRSNet**.
+
+### 🔗 Implementations
+
+- **MLCLNet (integrated in MSDA-Net, IPT 2022)**  
+  https://github.com/YuChuang1205/MSDA-Net  
+
+- **MSHNet (CVPR 2024)**  
+  https://github.com/Lliu666/MSHNet  
+
+- **ConDSeg (AAAI 2025)**  
+  https://github.com/Mengqi-Lei/ConDSeg  
+
+- **PAL (ICCV 2025)**  
+  https://github.com/YuChuang1205/PAL  
+
+- **UNIP (ICCV 2025)**  
+  https://github.com/casiatao/UNIP  
+
+- **SRSNet (TIP 2025)**  
+  https://github.com/fidshu/SRSNet  
+
+
+
