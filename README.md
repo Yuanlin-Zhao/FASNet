@@ -33,7 +33,7 @@ dataset/
     ├── images/    # Validation images
     ├── labels/    # Validation masks
     └── texts/     # Corresponding text descriptions
-
+```
 
 ## 🚀 How to Run
 
