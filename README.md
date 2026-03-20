@@ -14,3 +14,6 @@
 ---
 ### UNIP ICCV‘25
 - 🔗 项目链接：[https://github.com/casiatao/UNIP](https://github.com/casiatao/UNIP)
+---
+### UNIP ICCV‘25
+- 🔗 项目链接：[https://github.com/fidshu/SRSNet](https://github.com/fidshu/SRSNet)
