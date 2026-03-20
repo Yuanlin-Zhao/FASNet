@@ -12,5 +12,5 @@
 ### PAL ICCV‘25
 - 🔗 项目链接：[https://github.com/YuChuang1205/PAL](https://github.com/YuChuang1205/PAL)
 ---
-### PAL ICCV‘25
+### UNIP ICCV‘25
 - 🔗 项目链接：[https://github.com/casiatao/UNIP](https://github.com/casiatao/UNIP)
