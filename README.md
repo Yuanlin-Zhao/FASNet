@@ -14,6 +14,16 @@ Two datasets are provided for reproducing our experiments:
    - Extraction code: `fmmh`  
    - Note: This dataset follows the **SRSNet** training/testing split.
 
+dataset/
+├── train/
+│ ├── images/ # Training images
+│ ├── labels/ # Ground truth segmentation masks
+│ └── texts/ # Corresponding text descriptions
+└── val/
+├── images/ # Validation images
+├── labels/ # Validation masks
+└── texts/ # Corresponding text descriptions
+
 
 ## 🚀 How to Run
 
