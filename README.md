@@ -75,7 +75,11 @@ Our experiments are conducted under consistent data split settings for fair comp
   https://github.com/casiatao/UNIP  
 
 - **SRSNet (TIP 2025)**  
-  https://github.com/fidshu/SRSNet  
+  https://github.com/fidshu/SRSNet
+
+  - **ALCL MLCLNet MSDA**  
+  https://github.com/YuChuang1205/MSDA-Net
+
 
 
 
