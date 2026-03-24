@@ -80,7 +80,7 @@ Our experiments are conducted under consistent data split settings for fair comp
 - **ALCL MLCLNet MSDA**  
   https://github.com/YuChuang1205/MSDA-Net
 
-- **Unet $$ ResUnet**  
+- **Unet and ResUnet**  
 https://github.com/zh320/medical-segmentation-pytorch
 
 
