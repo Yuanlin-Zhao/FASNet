@@ -77,7 +77,7 @@ Our experiments are conducted under consistent data split settings for fair comp
 - **SRSNet (TIP 2025)**  
   https://github.com/fidshu/SRSNet
 
-  - **ALCL MLCLNet MSDA**  
+- **ALCL MLCLNet MSDA**  
   https://github.com/YuChuang1205/MSDA-Net
 
 
