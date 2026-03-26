@@ -59,8 +59,7 @@ Our experiments are conducted under consistent data split settings for fair comp
 
 ### 🔗 Implementations
 
-- **MLCLNet (integrated in MSDA-Net, IPT 2022)**  
-  https://github.com/YuChuang1205/MSDA-Net  
+
 
 - **MSHNet (CVPR 2024)**  
   https://github.com/Lliu666/MSHNet  
