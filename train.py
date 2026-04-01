@@ -22,15 +22,11 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 
-# =================================================================================
-# 4. 主程序
-# =================================================================================
 def create_model(args):
     # 你的模型
     model = IRSegNet(in_channels=3, num_classes=args.num_classes)
 
     return model
-
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -41,12 +37,12 @@ def set_seed(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
+
 class CriterionComposite(nn.Module):
     def __init__(self, num_classes, alpha=0.5):
         super(CriterionComposite, self).__init__()
         self.num_classes = num_classes
         self.alpha = alpha  # 平衡因子
-        # ignore_index=255 忽略背景/边界标注
         self.ce = nn.CrossEntropyLoss(ignore_index=255)
 
     def dice_loss(self, predict, target):
@@ -60,23 +56,16 @@ class CriterionComposite(nn.Module):
         return loss
 
     def forward(self, inputs, target):
-        # inputs: [B, C, H, W], target: [B, H, W]
         loss_ce = self.ce(inputs, target)
-
-        # 计算 Dice Loss (需要 One-hot 编码)
-        # 过滤掉 ignore_index=255 的区域，避免计算错误
         valid_mask = (target != 255)
         target_dice = target.clone()
         target_dice[~valid_mask] = 0  # 临时填充，后面会mask掉
-
         target_one_hot = F.one_hot(target_dice, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
         inputs_softmax = F.softmax(inputs, dim=1)
-
-        # 只计算有效区域的 Dice
         loss_dice = 0.
-        # 对每一类计算 Dice，然后取平均
+
         for i in range(self.num_classes):
-            # 可以根据需要给小目标类（如行人）加权重
+
             loss_dice += self.dice_loss(inputs_softmax[:, i] * valid_mask, target_one_hot[:, i] * valid_mask)
 
         loss_dice = loss_dice / self.num_classes
@@ -112,15 +101,16 @@ class eval_transform:
     def __call__(self, img, target):
         return self.transforms(img, target)
 
+
 class InfraredAttentionLoss(nn.Module):
 
     def __init__(
-        self,
-        lambda_inside=1.0,
-        lambda_outside=0.5,
-        lambda_bg=0.5,
-        lambda_smooth=0.05,
-        eps=1e-6
+            self,
+            lambda_inside=1.0,
+            lambda_outside=0.5,
+            lambda_bg=0.5,
+            lambda_smooth=0.05,
+            eps=1e-6
     ):
         super().__init__()
 
@@ -131,21 +121,13 @@ class InfraredAttentionLoss(nn.Module):
         self.eps = eps
 
     def forward(self, att, target):
-
-        # probability
         p = torch.sigmoid(att)
 
-        # -----------------------------
-        # 1. Inside Region Constraint
-        # label 区域 attention 必须高
-        # -----------------------------
+
         inside_loss = (1 - p) * target
         inside_loss = inside_loss.mean()
 
-        # -----------------------------
-        # 2. Boundary Relaxation
-        # label 外扩允许 attention
-        # -----------------------------
+
         dilated = F.max_pool2d(target, kernel_size=7, stride=1, padding=3)
 
         relax_region = dilated - target
@@ -153,46 +135,62 @@ class InfraredAttentionLoss(nn.Module):
         outside_loss = torch.clamp(p - 0.5, min=0) * relax_region
         outside_loss = outside_loss.mean()
 
-        # -----------------------------
-        # 3. Background Suppression
-        # 远背景 attention 必须低
-        # -----------------------------
+
         far_bg = 1 - dilated
 
         bg_loss = p * far_bg
         bg_loss = bg_loss.mean()
 
-        # -----------------------------
-        # 4. Structure Smoothness
-        # -----------------------------
         dx = torch.abs(p[:, :, :, 1:] - p[:, :, :, :-1])
         dy = torch.abs(p[:, :, 1:, :] - p[:, :, :-1, :])
 
         smooth_loss = dx.mean() + dy.mean()
 
-        # -----------------------------
-        # Final Loss
-        # -----------------------------
         loss = (
-            self.lambda_inside * inside_loss
-            + self.lambda_outside * outside_loss
-            + self.lambda_bg * bg_loss
-            + self.lambda_smooth * smooth_loss
+                self.lambda_inside * inside_loss
+                + self.lambda_outside * outside_loss
+                + self.lambda_bg * bg_loss
+                + self.lambda_smooth * smooth_loss
         )
 
         return loss
+
+
+def info_nce_loss(v_feat, t_feat, temperature=0.5):
+
+    v_feat = F.normalize(v_feat, dim=-1)
+    t_feat = F.normalize(t_feat, dim=-1)
+
+
+    pos_sim = torch.sum(v_feat * t_feat, dim=-1)
+
+    loss = F.mse_loss(pos_sim, torch.ones_like(pos_sim))
+
+    return loss * 0.1
+
+
+def object_alignment_loss(v_feat, t_feat):
+
+    v_feat = F.normalize(v_feat, dim=-1)
+    t_feat = F.normalize(t_feat, dim=-1)
+
+
+    cosine_sim = (v_feat * t_feat).sum(dim=-1)
+
+    loss = (1 - cosine_sim).mean()
+
+    return loss * 0.1
+
 
 def train_one_epoch_pro(model, optimizer, data_loader, device, epoch, criterion, scaler,
                         lr_scheduler, print_freq=10, accumulation_steps=4):
     model.train()
     total_loss = 0.0
-    optimizer.zero_grad()  # 初始化梯度
+    optimizer.zero_grad()
 
     header = 'Epoch: [{}]'.format(epoch)
 
-
     for i, (image, target, input_ids, attention_mask) in enumerate(data_loader):
-
         image = image.to(device)
         target = target.to(device)
         input_ids = input_ids.to(device)
@@ -200,46 +198,41 @@ def train_one_epoch_pro(model, optimizer, data_loader, device, epoch, criterion,
 
         with autocast():
 
-            logits, attention_maps = model(image, input_ids, attention_mask)
+            logits, attention_maps, v_feat, t_feat = model(image, input_ids, attention_mask)
 
-            # segmentation target
+
             seg_target = target.long()
-
-            # attention target
             if target.dim() == 3:
                 att_target = target.unsqueeze(1).float()
             else:
                 att_target = target.float()
 
-
             seg_loss = criterion(logits, seg_target)
 
+            # --- 原有注意力损失逻辑 ---
             att_criterion = InfraredAttentionLoss()
-
             att_loss = 0.0
             for att in attention_maps:
-                att = F.interpolate(
-                    att,
-                    size=att_target.shape[-2:],
-                    mode='bilinear',
-                    align_corners=True
-                )
+                att = F.interpolate(att, size=att_target.shape[-2:], mode='bilinear', align_corners=True)
                 att_loss += att_criterion(att, att_target)
-
             att_loss /= len(attention_maps)
 
-            loss = seg_loss + 0.1 * att_loss
+
+            align_loss = info_nce_loss(v_feat, t_feat)
+
+            loss = seg_loss + 0.1 * att_loss + 0.1 * align_loss
+
             loss = loss / accumulation_steps
 
         scaler.scale(loss).backward()
-        # 每 accumulation_steps 步更新一次权重
+
         if (i + 1) % accumulation_steps == 0:
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad()
             lr_scheduler.step()
 
-        loss_val = loss.item() * accumulation_steps  # 还原真实 loss 用于打印
+        loss_val = loss.item() * accumulation_steps
         total_loss += loss_val
 
         if i % print_freq == 0:
@@ -249,9 +242,8 @@ def train_one_epoch_pro(model, optimizer, data_loader, device, epoch, criterion,
     return total_loss / len(data_loader)
 
 
-
-
 import train_utils.utils as utils
+
 
 def textevaluate(model, data_loader, device, num_classes, criterion):
     model.eval()
@@ -269,11 +261,8 @@ def textevaluate(model, data_loader, device, num_classes, criterion):
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
 
-            # 模型预测
             output, _ = model(image, input_ids, attention_mask)
 
-            # --- 核心修正：只传递 inputs 和 target ---
-            # 你的 CriterionComposite.forward(self, inputs, target) 只需要这两个
             val_loss = criterion(output, target)
 
             # 更新日志记录
@@ -284,11 +273,9 @@ def textevaluate(model, data_loader, device, num_classes, criterion):
             confmat.update(target.flatten(), pred_label.flatten())
 
             if num_classes == 2:
-
                 pred = torch.sigmoid(output[:, 1])
                 pred = (pred > 0.5).float()
                 target_bin = (target == 1).float()
-
 
                 intersection = (pred * target_bin).sum(dim=(1, 2))
                 union = pred.sum(dim=(1, 2)) + target_bin.sum(dim=(1, 2))
@@ -303,12 +290,11 @@ def textevaluate(model, data_loader, device, num_classes, criterion):
     return confmat, metric_logger.meters["loss"].global_avg, avg_dice
 
 
-
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device} | 🚀 Advanced Training Mode On")
 
-    # 1. 数据集
+
     train_dataset = get_Dataset(args.data_path, train=True,
                                 transforms=train_transform(size=args.train_size))
     val_dataset = get_Dataset(args.data_path, train=False,
@@ -328,11 +314,11 @@ def main(args):
                                              num_workers=num_workers,
                                              pin_memory=True)
 
-    # 2. 模型
+
     model = create_model(args)
     model.to(device)
 
-    # 3. 优化器 & 混合精度
+
     params_to_optimize = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(params_to_optimize,
                                   lr=args.lr,
@@ -340,7 +326,7 @@ def main(args):
 
     scaler = GradScaler()
 
-    # 4. 学习率调度器
+
     lr_scheduler = create_lr_scheduler(
         optimizer,
         len(train_loader),
@@ -357,8 +343,6 @@ def main(args):
     best_miou = 0.
     start_time = time.time()
 
-
-
     # 创建模型保存目录
     model_save_dir = os.path.join("save_weights", args.model)
     os.makedirs(model_save_dir, exist_ok=True)
@@ -372,7 +356,6 @@ def main(args):
     class_iou_columns = [f'class{i}_iou' for i in range(args.num_classes)]
 
     df = pd.DataFrame(columns=base_columns + class_iou_columns)
-
 
     acc_steps = 4
 
@@ -429,18 +412,17 @@ def main(args):
               f"Dice = {dice_val:.4f}")
 
         row_data = [
-            train_loss,
-            val_loss,
-            acc_val,
-            miou_val * 100,
-            recall_val,
-            precision_val,
-            dice_val,
-            f1_val
-        ] + [float(iou) * 100 for iou in iou_per_class]
+                       train_loss,
+                       val_loss,
+                       acc_val,
+                       miou_val * 100,
+                       recall_val,
+                       precision_val,
+                       dice_val,
+                       f1_val
+                   ] + [float(iou) * 100 for iou in iou_per_class]
 
         df.loc[epoch] = row_data
-
 
         df.to_csv(log_path, index=False)
 
@@ -469,18 +451,19 @@ def main(args):
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description="Advanced FMB Training")
-    parser.add_argument("--model", default="IRSegText-SIRST3-Loss0.1")
+    parser.add_argument("--model",
+                        default="IRSegText-NUDT_SIRST_1_1_point_halfnotrainclip_noalinglossnoattentionloss")  # IRSTD_1K_point
 
     parser.add_argument("--num-classes", default=2, type=int)
-    parser.add_argument("--data-path", default=r"D:\zyl\IRSeg\irseg\data\dataset\medicine")
+    parser.add_argument("--data-path", default=r"D:\zyl\IRSeg\irseg\data\dataset\NUDT_SIRST_1_1_point")
     parser.add_argument("--device", default="cuda:0")
 
-    # 策略建议：Batch Size 设为 4 或 8，代码会自动累加梯度
+
     parser.add_argument("-b", "--batch-size", default=4, type=int)
     parser.add_argument("--epochs", default=100, type=int)
     parser.add_argument("--train_size", default=256, type=int)
 
-    # 学习率策略：因为使用了梯度累加，真实 Batch Size 变大了，学习率可以稍微给大一点点
+
     parser.add_argument('--lr', default=3e-4, type=float)
     parser.add_argument('--weight-decay', default=1e-2, type=float)
 
