@@ -11,15 +11,13 @@ from torch.cuda.amp import autocast
 from torch.cuda.amp import autocast, GradScaler
 from train_utils import evaluate, create_lr_scheduler
 from my_text_dataset import get_Dataset
-from src.unetimprove import UNetImprove  # 你的修复版模型
+
 from PIL import ImageFile
 import random
 import numpy as np
 from src.IRsegNetText import IRSegNet
 
 
-
-from src.IRsegNetTextL import IRSegNetL
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
@@ -471,7 +469,7 @@ def main(args):
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description="Advanced FMB Training")
-    parser.add_argument("--model", default="IRSegText-medicine")
+    parser.add_argument("--model", default="IRSegText-SIRST3-Loss0.1")
 
     parser.add_argument("--num-classes", default=2, type=int)
     parser.add_argument("--data-path", default=r"D:\zyl\IRSeg\irseg\data\dataset\medicine")
@@ -480,7 +478,7 @@ def parse_args():
     # 策略建议：Batch Size 设为 4 或 8，代码会自动累加梯度
     parser.add_argument("-b", "--batch-size", default=4, type=int)
     parser.add_argument("--epochs", default=100, type=int)
-    parser.add_argument("--train_size", default=512, type=int)
+    parser.add_argument("--train_size", default=256, type=int)
 
     # 学习率策略：因为使用了梯度累加，真实 Batch Size 变大了，学习率可以稍微给大一点点
     parser.add_argument('--lr', default=3e-4, type=float)
