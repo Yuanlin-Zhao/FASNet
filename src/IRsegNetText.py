@@ -152,7 +152,11 @@ class IRSegNet(nn.Module):
 
         self.text_encoder = CLIPTextModel.from_pretrained(r"D:\zyl\IRSeg\irseg\clip-vit-base-patch32")
         for param in self.text_encoder.parameters():
+<<<<<<< HEAD
             param.requires_grad = False
+=======
+            param.requires_grad = True
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
 
         self.inc = IGRCBlock(in_channels, base_c)
         self.down1 = nn.Sequential(nn.MaxPool2d(2), IGRCBlock(base_c, base_c * 2))

@@ -33,6 +33,7 @@ class get_Dataset(Dataset):
         image_dir = os.path.join(base_dir, 'images')
         label_dir = os.path.join(base_dir, 'labels')
 
+<<<<<<< HEAD
         text_dir = os.path.join(base_dir, 'texts')
 
         valid_ext = ('.png', '.jpg', '.jpeg', '.tif', '.bmp')
@@ -42,13 +43,28 @@ class get_Dataset(Dataset):
                       for f in os.listdir(label_dir) if f.lower().endswith(valid_ext)}
 
 
+=======
+        text_dir = os.path.join(base_dir, 'texts')  # 假设文本存放在 texts 文件夹
+
+        valid_ext = ('.png', '.jpg', '.jpeg', '.tif', '.bmp')
+
+        # 建立标签和文本的索引映射
+        label_dict = {os.path.splitext(f)[0]: os.path.join(label_dir, f)
+                      for f in os.listdir(label_dir) if f.lower().endswith(valid_ext)}
+
+        # 文本通常是 .txt 格式
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
         text_dict = {os.path.splitext(f)[0]: os.path.join(text_dir, f)
                      for f in os.listdir(text_dir) if f.lower().endswith('.txt')}
 
         for im in os.listdir(image_dir):
             if im.lower().endswith(valid_ext):
                 stem = os.path.splitext(im)[0]
+<<<<<<< HEAD
 
+=======
+                # 必须同时拥有图像、标签和描述文本
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
                 if stem in label_dict and stem in text_dict:
                     data_list.append({
                         'img': os.path.join(image_dir, im),

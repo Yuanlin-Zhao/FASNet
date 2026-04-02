@@ -5,7 +5,11 @@ import numpy as np
 from PIL import Image
 import torch.nn.functional as F
 from tqdm import tqdm
+<<<<<<< HEAD
 from train import parse_args, create_model
+=======
+from traintext import parse_args, create_model
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
 from torchvision import transforms
 from transformers import AutoTokenizer  # Or whatever tokenizer you used in training
 
@@ -51,29 +55,51 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(r"D:\zyl\IRSeg\irseg\clip-vit-base-patch32", local_files_only=True)
     with torch.no_grad():
         for i in tqdm(os.listdir(test_path)):
+<<<<<<< HEAD
 
+=======
+            # --- 1. 处理图像 ---
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
             img_full_path = os.path.join(test_path, i)
             original_img = Image.open(img_full_path).convert('RGB')
             ori_w, ori_h = original_img.size
             img_tensor = data_transform(original_img).unsqueeze(0).to(device)
 
+<<<<<<< HEAD
 
+=======
+            # 2. Read Text
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
             txt_file_name = os.path.splitext(i)[0] + ".txt"
             txt_full_path = os.path.join(text_path, txt_file_name)
 
             with open(txt_full_path, 'r', encoding='utf-8') as f:
                 text_data = f.read().strip()
 
+<<<<<<< HEAD
 
             text_inputs = tokenizer(
                 text_data,
                 padding='max_length',
                 max_length=77,
+=======
+            # 3. Tokenize the text (New Step)
+            # We must ensure the text is converted to the format the model expects
+            text_inputs = tokenizer(
+                text_data,
+                padding='max_length',
+                max_length=77,  # Use the same max_length as training
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
                 truncation=True,
                 return_tensors="pt"
             ).to(device)
 
+<<<<<<< HEAD
 
+=======
+            # 4. Update the Model Call
+            # Pass the input_ids and the missing attention_mask
+>>>>>>> 46eb165da086bbfbc74ec693833fdd18dea45b33
             output, _ = model(
                 img_tensor,
                 input_ids=text_inputs['input_ids'],
